@@ -6,7 +6,7 @@
 プロジェクトに関するやり取りについては基本的に日本語を使いますが、英語も許可しています。
 
 **MitsuWM** is X11-based WM(window manager) provides **thoroughly lightweight** desktop envirounment for Linux. <br>
-This WM basically inherits [sanmitsu-wm](https://github.com/Perukii/sanmitsu-wm)'s functions and appearance (except bugs...), and additionally provides original functions.  
+This WM basically inherits [sanmitsu-wm](https://github.com/Perukii/sanmitsu-wm)'s functions and appearance (except bugs...), and additionally provides some original functions.  
 
 **We fundamentally use Japanese(language)** for conducting this project, **but you can use English** for commiting and sending issues/pull requests alternatively.
 

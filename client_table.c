@@ -1,41 +1,51 @@
 
 
-#define MTWM_CLIENT_WIDGETS    4
-    #define MTWM_CLIENT_BOX      0
-    #define MTWM_CLIENT_APP      1
-    #define MTWM_CLIENT_TITLEBAR 2
-    #define MTWM_CLIENT_EXIT     3
+// クライアントの構成ウインドウ識別番号
+#define MTWM_CLIENT_WIDGETS    4    // 構成ウインドウの数
+    #define MTWM_CLIENT_BOX      0  // Box
+    #define MTWM_CLIENT_APP      1  // Application
+    #define MTWM_CLIENT_TITLEBAR 2  // Titlebar
+    #define MTWM_CLIENT_EXIT     3  // Exit
 
+// クライアント
 typedef struct{
     Window window[MTWM_CLIENT_WIDGETS];
+
 } mtwm_client;
 
+// クライアントのテーブル格納用構造体 (以下クライアントインデックス)
 typedef struct{
-    mtwm_client client;
-    Bool is_enable;
-    size_t code_forward, code_backward;
+    mtwm_client client;                 // クライアント
+    Bool exists;                     // クライアントは有効？
+    size_t code_forward, code_backward; // テーブル内の前後要素のアドレス
 } mtwm_client_table_index;
 
+// クライアントテーブル
 typedef struct{
     mtwm_client_table_index * hasharray;
-    size_t current_size, capacity_size, hashcode_max;
+    size_t current_size;  // 現在のhasharrayのサイズ
+    size_t capacity_size; // hasharrayのメモリ確保量
+    size_t hashcode_max;  // 最大ハッシュコード
 } mtwm_client_table;
 
+// NULLクライアント
 mtwm_client mtwm_null_client(){
     mtwm_client res_client;
     for(unsigned int i=0; i<MTWM_CLIENT_WIDGETS; i++) res_client.window[i] = None;
     return res_client;
 }
 
+// NULLクライアントインデックス
 mtwm_client_table_index mtwm_null_client_index(){
     mtwm_client_table_index res_client;
     res_client.client = mtwm_null_client();
-    res_client.is_enable = False;
+    res_client.exists = False;
     res_client.code_forward = __SIZE_MAX__;
     res_client.code_backward= __SIZE_MAX__;
     return res_client;
 }
 
+// クライアントテーブルを初期化
 int mtwm_client_table_init(mtwm_client_table * _table, size_t _hashcode_max){
 
     _table->hasharray = malloc(sizeof(mtwm_client_table_index) * _hashcode_max*2);
@@ -51,16 +61,21 @@ int mtwm_client_table_init(mtwm_client_table * _table, size_t _hashcode_max){
     return 1;
 }
 
+
+// クライアントテーブルに値を追加
 int mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
 
+    // ハッシュ関数
     size_t adress = _client.window[MTWM_CLIENT_BOX] % _table->hashcode_max;
 
+    // 追加するクライアントに情報を付加
     mtwm_client_table_index index;
     index.client = _client;
     index.code_forward = __SIZE_MAX__;
     index.code_backward= __SIZE_MAX__;
-    index.is_enable = True;
+    index.exists = True;
 
+    // 探索対象のアドレスの中身がなくなるまでcode_forwardの指すアドレスをたどり続けるループ。
     while(_table->hasharray[adress].client.window[0] != None){
 
         if(_table->hasharray[adress].code_forward != __SIZE_MAX__)
@@ -71,6 +86,11 @@ int mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
 
             _table->current_size++;
 
+            // hasharrayが満杯になった時、新しいメモリを確保。
+            // hasharrayの占有メモリ量が2倍になる。
+            // TODO : この作業をする前に、無効な(exists == Falseな) クライアントインデックスを
+            //        メモリ内から消し、hasharrayの構造を整理し直す
+            //        メモリコンパクション的な機能が欲しい。
             if(_table->current_size == _table->capacity_size){
                 _table->capacity_size *= 2;
                 _table->hasharray =
@@ -87,24 +107,30 @@ int mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
             adress = pre_adress;
         }
     }
-
+    // 挿入
     _table->hasharray[adress] = index;
     return 1;
 }
 
+// クライアントテーブル内に該当のウインドウをBOXにもつクライアントはあるか？
 size_t mtwm_client_table_window_exists(mtwm_client_table * _table, Window _target){
 
+    // ハッシュ関数
     size_t adress = _target % _table->hashcode_max;
 
+    // 対象のWindowが発見されるか、リスト構造の末端に行き着くまで、code_forwardの指すアドレスをたどり続ける。
     while(1){
 
+        // 見つかった時
         if(_table->hasharray[adress].client.window[MTWM_CLIENT_BOX] == _target){
-            if(_table->hasharray[adress].is_enable == True)
+            if(_table->hasharray[adress].exists == True)
                 return adress;
             else
                 return __SIZE_MAX__;
         }
 
+        // リストの末端にたどり着いない場合、再ループ
+        // たどり着いた場合、-1を返す
         if(_table->hasharray[adress].code_forward != __SIZE_MAX__)
             adress = _table->hasharray[adress].code_forward;
         else
@@ -114,6 +140,7 @@ size_t mtwm_client_table_window_exists(mtwm_client_table * _table, Window _targe
     return __SIZE_MAX__;
 }
 
+// 該当のウインドウをBOXにもつクライアントを探す
 mtwm_client mtwm_client_table_find(mtwm_client_table * _table, Window _target){
     int address = mtwm_client_table_window_exists(_table, _target);
     if(address != __SIZE_MAX__)
@@ -122,16 +149,19 @@ mtwm_client mtwm_client_table_find(mtwm_client_table * _table, Window _target){
         return mtwm_null_client();
 }
 
+// 該当のウインドウをBOXにもつクライアントを消す
+// 消すと言うよりも単に、existsをFalseにするだけである。随時メモリコンパクションを行うことでメモリ占有削減を目指す
 int mtwm_client_table_delete(mtwm_client_table * _table, Window _target){
     int address = mtwm_client_table_window_exists(_table, _target);
     if(address != __SIZE_MAX__){
-        _table->hasharray[address].is_enable = False;
+        _table->hasharray[address].exists = False;
         return 1;
     }
     else
         return 0;
 }
 
+// メモリ開放
 int mtwm_client_table_free(mtwm_client_table * _table){
 
     free(_table->hasharray);
