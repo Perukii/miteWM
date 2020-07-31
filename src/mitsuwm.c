@@ -41,7 +41,7 @@ int main(){
                  PointerMotionMask
                 );
 
-    mtwm_set_background("./screen.png");
+    //mtwm_set_background("../screen.png");
 
     // ==== テスト ====
 

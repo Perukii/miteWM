@@ -44,8 +44,10 @@ void mtwm_set_background(const char * _file){
 
 void mtwm_draw_background(){
 
+    if(mtwm_background.image == NULL) return;
+
     cairo_save(mtwm_background.cr);
-    
+
     cairo_scale(mtwm_background.cr,
                 mtwm_background.image_scale, mtwm_background.image_scale);
 
