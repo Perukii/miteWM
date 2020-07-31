@@ -1,12 +1,14 @@
 
-
 #include <X11/Xlib.h>
+#include <cairo/cairo-xlib.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "client_table.c"
+#include "mtwm_client_table.c"
 
 Display *mtwm_display;
 Window   mtwm_root_window;
+
+#include "mtwm_background.c"
 
 int mtwm_max(int a, int b){
     return a<b ? b:a;
@@ -28,23 +30,28 @@ int main(){
     mtwm_display    = XOpenDisplay(0);
     if(mtwm_display == NULL) return 1;
 
-    mtwm_root_window = XDefaultRootWindow(mtwm_display);
     XEvent event;
+
+    // ==== 根ウインドウ ====
+
+    mtwm_root_window = XDefaultRootWindow(mtwm_display);
 
     XSelectInput(mtwm_display, mtwm_root_window,
                  ButtonPressMask | ButtonReleaseMask |
                  PointerMotionMask
                 );
 
-    XWindowAttributes root_attributes;
-    XGetWindowAttributes(mtwm_display, mtwm_root_window, &root_attributes);
-    
+    mtwm_set_background("./screen.png");
+
+    // ==== テスト ====
 
     Window test = XCreateSimpleWindow(
         mtwm_display, mtwm_root_window, 300, 300, 500, 500, 0, 
         BlackPixel(mtwm_display,0), mtwm_color("orange") );
 
     XMapWindow(mtwm_display, test);
+
+    // ---
 
     struct{ unsigned int button, x_root, y_root; Window window; XWindowAttributes attributes; }
         grip_info;
@@ -54,6 +61,8 @@ int main(){
     grip_info.x_root = 0;
     grip_info.y_root = 0;
 
+    mtwm_draw_background();
+
     while(1){
 
         XNextEvent(mtwm_display, &event);
@@ -61,6 +70,7 @@ int main(){
 
           case ButtonPress:
             if(event.xbutton.subwindow == None) break;
+            if(event.xbutton.subwindow == mtwm_background.window) break;
             XGetWindowAttributes(mtwm_display, event.xbutton.subwindow, &grip_info.attributes);
             grip_info.button = event.xbutton.button;
             grip_info.window = event.xbutton.subwindow;
@@ -88,6 +98,8 @@ int main(){
                               mtwm_max(1,grip_info.attributes.width  + x_diff),
                               mtwm_max(1,grip_info.attributes.height + y_diff));
             }
+            mtwm_draw_background();
+
             break;
         }
     }
@@ -95,51 +107,6 @@ int main(){
     return 1;
 }
 
-/*
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
-int main(void)
-{
-    Display * dpy;
-    XWindowAttributes attr;
-    XButtonEvent start;
-    XEvent ev;
-
-    if(!(dpy = XOpenDisplay(0x0))) return 1;
-
-    XGrabKey(dpy, XKeysymToKeycode(dpy, XStringToKeysym("F1")), Mod1Mask,
-            DefaultRootWindow(dpy), True, GrabModeAsync, GrabModeAsync);
-    XGrabButton(dpy, 1, Mod1Mask, DefaultRootWindow(dpy), True,
-            ButtonPressMask|ButtonReleaseMask|PointerMotionMask, GrabModeAsync, GrabModeAsync, None, None);
-    XGrabButton(dpy, 3, Mod1Mask, DefaultRootWindow(dpy), True,
-            ButtonPressMask|ButtonReleaseMask|PointerMotionMask, GrabModeAsync, GrabModeAsync, None, None);
-
-    start.subwindow = None;
-    for(;;)
-    {
-        XNextEvent(dpy, &ev);
-        if(ev.type == KeyPress && ev.xkey.subwindow != None)
-            XRaiseWindow(dpy, ev.xkey.subwindow);
-        else if(ev.type == ButtonPress && ev.xbutton.subwindow != None)
-        {
-            XGetWindowAttributes(dpy, ev.xbutton.subwindow, &attr);
-            start = ev.xbutton;
-        }
-        else if(ev.type == MotionNotify && start.subwindow != None)
-        {
-            int xdiff = ev.xbutton.x_root - start.x_root;
-            int ydiff = ev.xbutton.y_root - start.y_root;
-            XMoveResizeWindow(dpy, start.subwindow,
-                attr.x + (start.button==1 ? xdiff : 0),
-                attr.y + (start.button==1 ? ydiff : 0),
-                MAX(1, attr.width + (start.button==3 ? xdiff : 0)),
-                MAX(1, attr.height + (start.button==3 ? ydiff : 0)));
-        }
-        else if(ev.type == ButtonRelease)
-            start.subwindow = None;
-    }
-}
-*/
 
 /*
     mtwm_client_table table;
