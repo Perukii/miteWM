@@ -1,26 +1,4 @@
 
-
-
-int mtwm_draw_client(mtwm_client * _client){
-
-    unsigned int client_width = cairo_xlib_surface_get_width (_client->surface[MTWM_CLIENT_BOX]);
-    unsigned int client_height= cairo_xlib_surface_get_height(_client->surface[MTWM_CLIENT_BOX]);
-    
-    double box_border = mtwm_config_box_border + mtwm_config_shadow_roughness;
-
-    cairo_set_operator(_client->cr[MTWM_CLIENT_BOX], CAIRO_OPERATOR_SOURCE);
-    cairo_set_line_width(_client->cr[MTWM_CLIENT_BOX], mtwm_config_shadow_roughness);
-
-    for(double i=0; i<box_border; i += mtwm_config_shadow_roughness){
-        cairo_set_source_rgba(_client->cr[MTWM_CLIENT_BOX], 0, 0, 0, 0.5/box_border*i);
-        cairo_rectangle(_client->cr[MTWM_CLIENT_BOX], i,i, client_width-i*2, client_height-i*2);
-        
-        cairo_stroke(_client->cr[MTWM_CLIENT_BOX]);
-    }
-    cairo_surface_flush(_client->surface[MTWM_CLIENT_BOX]);
-    
-}
-
 int mtwm_new_client(mtwm_client_table * _client_table, Window _targ_window){
 
     if(_targ_window == None) return 0;
@@ -36,13 +14,13 @@ int mtwm_new_client(mtwm_client_table * _client_table, Window _targ_window){
     // ===== BOX =====
     // ---------------
 
-    client.border_width  =
+    client.local_border_width  =
         mtwm_width_diff  + targ_attributes.border_width*2;
-    client.border_height =
+    client.local_border_height =
         mtwm_height_diff + targ_attributes.border_width*2;
 
-    unsigned int box_width = client.border_width + targ_attributes.width;
-    unsigned int box_height = client.border_height + targ_attributes.height;
+    unsigned int box_width = client.local_border_width + targ_attributes.width;
+    unsigned int box_height = client.local_border_height + targ_attributes.height;
 
     XVisualInfo box_visual_info;
     XMatchVisualInfo(mtwm_display, DefaultScreen(mtwm_display), 32, TrueColor, &box_visual_info);
@@ -68,10 +46,9 @@ int mtwm_new_client(mtwm_client_table * _client_table, Window _targ_window){
 
     // ウインドウの設定
     XReparentWindow      (mtwm_display, client.window[MTWM_CLIENT_APP], client.window[MTWM_CLIENT_BOX],
-                          mtwm_config_box_border, mtwm_config_titlebar_height);
+                          mtwm_config_box_border, mtwm_config_titlebar_height + mtwm_config_box_border);
     XDefineCursor        (mtwm_display, client.window[MTWM_CLIENT_BOX],
                           XCreateFontCursor(mtwm_display, XC_plus));
-    XSelectInput         (mtwm_display, client.window[MTWM_CLIENT_BOX], SubstructureNotifyMask);
     XMapWindow           (mtwm_display, client.window[MTWM_CLIENT_BOX]);
 
     // ウインドウのcairoコンテキストを作成
@@ -85,11 +62,45 @@ int mtwm_new_client(mtwm_client_table * _client_table, Window _targ_window){
                     box_height);
     client.cr[MTWM_CLIENT_BOX] = cairo_create(client.surface[MTWM_CLIENT_BOX]);
 
+    cairo_set_operator  (client.cr[MTWM_CLIENT_BOX], CAIRO_OPERATOR_SOURCE);
+    cairo_set_antialias (client.cr[MTWM_CLIENT_BOX], CAIRO_ANTIALIAS_SUBPIXEL);
+    cairo_set_line_width(client.cr[MTWM_CLIENT_BOX], mtwm_config_shadow_roughness);
 
 
     // ----------------
     // ===== EXIT =====
     // ----------------
+
+    unsigned int exit_width  = mtwm_config_titlebar_width_margin;
+    unsigned int exit_height = mtwm_config_titlebar_height;
+
+    client.window[MTWM_CLIENT_EXIT] = XCreateWindow(
+        mtwm_display,
+        client.window[MTWM_CLIENT_BOX],
+        box_width - mtwm_config_box_border - mtwm_config_titlebar_width_margin - targ_attributes.border_width,
+        mtwm_config_box_border + targ_attributes.border_width,
+        exit_width,
+        exit_height,
+        0, box_visual_info.depth,
+        InputOutput, box_visual_info.visual,
+        CWColormap | CWBorderPixel | CWBackPixel | CWOverrideRedirect, &box_attributes
+    );
+
+    XMapWindow(mtwm_display, client.window[MTWM_CLIENT_EXIT]);
+
+    client.surface[MTWM_CLIENT_EXIT] =
+            cairo_xlib_surface_create(
+                    mtwm_display,
+                    client.window[MTWM_CLIENT_EXIT],
+                    box_visual_info.visual,
+                    mtwm_config_titlebar_width_margin,
+                    mtwm_config_titlebar_height);
+    client.cr[MTWM_CLIENT_EXIT] = cairo_create(client.surface[MTWM_CLIENT_EXIT]);
+
+    cairo_set_operator  (client.cr[MTWM_CLIENT_EXIT], CAIRO_OPERATOR_SOURCE);
+    cairo_set_antialias (client.cr[MTWM_CLIENT_EXIT], CAIRO_ANTIALIAS_SUBPIXEL);
+
+
 
     /*
     client.window[MTWM_CLIENT_BOX]

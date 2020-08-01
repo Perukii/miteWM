@@ -1,21 +1,5 @@
 
 
-// クライアントの構成ウインドウ識別番号
-#define MTWM_CLIENT_WIDGETS    4    // 構成ウインドウの数
-    #define MTWM_CLIENT_BOX      0  // Box
-    #define MTWM_CLIENT_APP      1  // Application
-    #define MTWM_CLIENT_TITLEBAR 2  // Titlebar
-    #define MTWM_CLIENT_EXIT     3  // Exit
-
-// クライアント
-typedef struct{
-    Window           window [MTWM_CLIENT_WIDGETS];
-    cairo_surface_t *surface[MTWM_CLIENT_WIDGETS];
-    cairo_t         *cr     [MTWM_CLIENT_WIDGETS];
-    unsigned int border_width;
-    unsigned int border_height;
-} mtwm_client;
-
 // クライアントのテーブル格納用構造体 (以下クライアントインデックス)
 typedef struct{
     mtwm_client client;                 // クライアント
