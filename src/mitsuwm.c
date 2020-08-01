@@ -1,18 +1,29 @@
 
 #include <X11/Xlib.h>
+#include <X11/cursorfont.h>
+#include <X11/Xutil.h>
 #include <cairo/cairo-xlib.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "mtwm_client_table.c"
 
+#define MTWM_MAX(A,B) (A)<(B) ? (B):(A)
+
 Display *mtwm_display;
 Window   mtwm_root_window;
 
-#include "mtwm_background.c"
+const unsigned int mtwm_config_box_border            = 6;
+const unsigned int mtwm_config_titlebar_width_margin = 25;
+const unsigned int mtwm_config_titlebar_height       = 25;
 
-int mtwm_max(int a, int b){
-    return a<b ? b:a;
-}
+const double mtwm_config_shadow_roughness            = 2.0;  // must roughness>=1 !!
+
+const unsigned int mtwm_width_diff  = mtwm_config_box_border*2;
+const unsigned int mtwm_height_diff = mtwm_config_titlebar_height + mtwm_config_box_border;
+
+#include "mtwm_background.c"
+#include "mtwm_window_creation.c"
+#include "mtwm_window_resize.c"
 
 unsigned long mtwm_color(const char * _color) {
 
@@ -25,33 +36,34 @@ unsigned long mtwm_color(const char * _color) {
 
 }
 
+void mtwm_generate_test_window(){
+    Window test = XCreateSimpleWindow(
+        mtwm_display, mtwm_root_window, 300, 300, 500, 500, 0, 
+        BlackPixel(mtwm_display,0), mtwm_color("orange") );
+
+    XMapWindow(mtwm_display, test);
+}
+
+
 int main(){
     
     mtwm_display    = XOpenDisplay(0);
     if(mtwm_display == NULL) return 1;
 
     XEvent event;
+    mtwm_client_table client_table;
+    mtwm_client_table_init(&client_table, 10);
 
     // ==== 根ウインドウ ====
 
     mtwm_root_window = XDefaultRootWindow(mtwm_display);
 
     XSelectInput(mtwm_display, mtwm_root_window,
-                 ButtonPressMask | ButtonReleaseMask |
-                 PointerMotionMask
+                 ButtonPressMask   | ButtonReleaseMask |
+                 PointerMotionMask | SubstructureNotifyMask
                 );
 
-    //mtwm_set_background("../screen.png");
-
-    // ==== テスト ====
-
-    Window test = XCreateSimpleWindow(
-        mtwm_display, mtwm_root_window, 300, 300, 500, 500, 0, 
-        BlackPixel(mtwm_display,0), mtwm_color("orange") );
-
-    XMapWindow(mtwm_display, test);
-
-    // ---
+    mtwm_set_background("/home/tada/Documents/Code/Dir2/MitsuWM/screen.png");
 
     struct{ unsigned int button, x_root, y_root; Window window; XWindowAttributes attributes; }
         grip_info;
@@ -61,12 +73,19 @@ int main(){
     grip_info.x_root = 0;
     grip_info.y_root = 0;
 
-    mtwm_draw_background();
-
     while(1){
 
         XNextEvent(mtwm_display, &event);
         switch(event.type){
+
+          case MapNotify:
+            if(event.xmap.window == mtwm_background.window){
+                mtwm_draw_background();
+                break;
+            }
+            mtwm_new_client(&client_table, event.xmap.window);
+            
+            break;
 
           case ButtonPress:
             if(event.xbutton.subwindow == None) break;
@@ -84,6 +103,7 @@ int main(){
           
           case MotionNotify:
             if(grip_info.window == None) break;
+            mtwm_client client = mtwm_client_table_find(&client_table, grip_info.window);
 
             int x_diff = event.xbutton.x_root - grip_info.x_root;
             int y_diff = event.xbutton.y_root - grip_info.y_root;
@@ -94,15 +114,17 @@ int main(){
                             grip_info.attributes.y + y_diff);
             }
             else{
-                XResizeWindow(mtwm_display, grip_info.window,
-                              mtwm_max(1,grip_info.attributes.width  + x_diff),
-                              mtwm_max(1,grip_info.attributes.height + y_diff));
+                mtwm_resize_window(&client, grip_info.attributes.width + x_diff, grip_info.attributes.height + y_diff);
             }
-            mtwm_draw_background();
 
+            mtwm_draw_background();
+            mtwm_draw_client(&client);
+            
             break;
         }
     }
+
+    mtwm_client_table_free(&client_table);
 
     return 1;
 }

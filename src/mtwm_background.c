@@ -21,13 +21,10 @@ void mtwm_set_background(const char * _file){
     );
 
     mtwm_background.surface = cairo_xlib_surface_create(mtwm_display, mtwm_background.window,
-                              DefaultVisual(mtwm_display, DefaultScreen(mtwm_display)), 0, 0);
+                              DefaultVisual(mtwm_display, DefaultScreen(mtwm_display)), root_attributes.width, root_attributes.height);
 
     mtwm_background.cr = cairo_create(mtwm_background.surface);
     mtwm_background.image = cairo_image_surface_create_from_png(_file);
-
-    cairo_xlib_surface_set_size(mtwm_background.surface,
-                                root_attributes.width, root_attributes.height);
 
     const double image_width  = cairo_image_surface_get_width (mtwm_background.image);
     const double image_height = cairo_image_surface_get_height(mtwm_background.image);

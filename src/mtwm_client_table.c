@@ -9,14 +9,17 @@
 
 // クライアント
 typedef struct{
-    Window window[MTWM_CLIENT_WIDGETS];
-
+    Window           window [MTWM_CLIENT_WIDGETS];
+    cairo_surface_t *surface[MTWM_CLIENT_WIDGETS];
+    cairo_t         *cr     [MTWM_CLIENT_WIDGETS];
+    unsigned int border_width;
+    unsigned int border_height;
 } mtwm_client;
 
 // クライアントのテーブル格納用構造体 (以下クライアントインデックス)
 typedef struct{
     mtwm_client client;                 // クライアント
-    Bool exists;                     // クライアントは有効？
+    Bool exists;                        // クライアントは有効？
     size_t code_forward, code_backward; // テーブル内の前後要素のアドレス
 } mtwm_client_table_index;
 
@@ -61,9 +64,8 @@ int mtwm_client_table_init(mtwm_client_table * _table, size_t _hashcode_max){
     return 1;
 }
 
-
 // クライアントテーブルに値を追加
-int mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
+size_t mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
 
     // ハッシュ関数
     size_t adress = _client.window[MTWM_CLIENT_BOX] % _table->hashcode_max;
@@ -109,7 +111,7 @@ int mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
     }
     // 挿入
     _table->hasharray[adress] = index;
-    return 1;
+    return adress;
 }
 
 // クライアントテーブル内に該当のウインドウをBOXにもつクライアントはあるか？
