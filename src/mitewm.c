@@ -7,13 +7,17 @@
 #include <stdio.h>
 
 // クライアントの構成ウインドウ識別番号
-#define MTWM_CLIENT_WIDGETS    4    // 構成ウインドウの数
+#define MTWM_CLIENT_WIDGETS    2    // 構成ウインドウの数
     #define MTWM_CLIENT_BOX      0  // Box
-    #define MTWM_CLIENT_TITLEBAR 1  // Titlebar
-    #define MTWM_CLIENT_EXIT     2  // Exit
-    #define MTWM_CLIENT_APP      3  // Application
+    #define MTWM_CLIENT_APP      1  // Application
 
-#define MTWM_MAX(A,B) (A)<(B) ? (B):(A)
+#define MTWM_RESIZE_ANGLE_TOP    0
+#define MTWM_RESIZE_ANGLE_BOTTOM 1
+#define MTWM_RESIZE_ANGLE_START  2
+#define MTWM_RESIZE_ANGLE_END    3
+#define MTWM_EXIT_PRESSED        4
+
+#define MTWM_MAX(A, B) ( (A) < (B) ? (B) : (A) )
 
 // ディスプレイ
 Display *mtwm_display;
