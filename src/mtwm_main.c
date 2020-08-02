@@ -1,6 +1,6 @@
 
 
-int main(){
+int main(int argc, char ** argv){
     
     mtwm_display    = XOpenDisplay(0);
     if(mtwm_display == NULL) return 1;
@@ -19,7 +19,10 @@ int main(){
                  PointerMotionMask | SubstructureNotifyMask
                 );
 
-    mtwm_set_background("/home/tada/Documents/Code/Dir2/MitsuWM/screen.png");
+    if(background_file != ""){
+        mtwm_set_background(background_file);
+    }
+   
 
     // 掴まれているウインドウの情報。
     struct{
