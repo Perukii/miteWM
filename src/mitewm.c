@@ -29,8 +29,10 @@ Window   mtwm_root_window;
 // ===== configure =====
 // ---------------------
 
-// クライアントの枠線の幅。実は処理の大きさにそこそこ影響するようで、狭いほど処理が小さくなる。
-const unsigned int mtwm_config_box_border            = 6;
+// クライアントの枠線の幅。
+const unsigned int mtwm_config_box_border            = 12;
+// クライアントの枠線の幅のうち、影を描画しない外側の部分。
+const unsigned int mtwm_config_empty_box_border      = 6;
 // クライアントのTITLEBARの右端とAPPの右端のX座標の差 = EXITの幅
 const unsigned int mtwm_config_titlebar_width_margin = 25;
 // TITLEBARの高さ
