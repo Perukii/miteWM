@@ -10,6 +10,30 @@ This WM basically inherits [sanmitsu-wm](https://github.com/Perukii/sanmitsu-wm)
 
 **We fundamentally use Japanese(language)** for conducting this project, **but you can use English** for commiting and sending issues/pull requests alternatively.
 
+### 使用ライブラリ・アプリケーション
+
+**ライブラリ**
+ - libX11
+ - libcairo
+ 
+**アプリケーション**
+  - xterm(他のターミナルソフトでも可だが、make set_xinitrcを使用する場合はxtermである必要がある)
+  - xcompmgr
+ 
+### ビルド
+
+ビルドにはX11が利用可能な環境が必要です。<br>
+
+1.上記の開発用ライブラリをインストールします。<br>
+2.makeを実行します。 <br>
+3.正常なコンパイルが完了した場合、make set_xinitrc を行います。<br>
+**なお実行前に、~/.xinitrcがまだファイルシステム上に存在していないこと確認してください。既に存在する場合は、上書きされても構わない内容であるかどうかを確認して実行するか、Makefileを参考に自分で書いて下さい。** <br> 
+自分で書く場合は、WM実行前にxcompmgrを、実行後すぐにxterm等ターミナルが実行される必要があることに注意してください。
+
+ここで、X11のセッションが無効である(または無効となっているttyに移動している)ことを確認してください。まだ出来ていない場合は、直ちに行って下さい。<br>
+4.startxを実行します。
+
+
 ### Licence
 
 GNU General Public License (version 3)
