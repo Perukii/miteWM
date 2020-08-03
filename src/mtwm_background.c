@@ -53,5 +53,5 @@ void mtwm_draw_background(){
     cairo_paint(mtwm_background.cr);
 
     cairo_restore(mtwm_background.cr);
-    cairo_surface_flush(mtwm_background.surface);
+    //cairo_surface_flush(mtwm_background.surface);
 }

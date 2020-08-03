@@ -40,9 +40,12 @@ void mtwm_draw_client(mtwm_client * _client){
                                                     0.0,
                                                     titlebar_width*0.0,
                                                     mtwm_config_titlebar_height*1.0);
-
+/*
     cairo_pattern_add_color_stop_rgba (titlebar_pattern, 1, 0.2, 0.2, 0.2, 0.8);
     cairo_pattern_add_color_stop_rgba (titlebar_pattern, 0, 0.5, 0.5, 0.5, 0.8);
+*/
+    cairo_pattern_add_color_stop_rgba (titlebar_pattern, 1, 1.0, 1.0, 1.0, 0.8);
+    cairo_pattern_add_color_stop_rgba (titlebar_pattern, 0, 1.0, 1.0, 1.0, 0.3);
     cairo_set_source(_client->cr[MTWM_CLIENT_BOX], titlebar_pattern);
 
     cairo_rectangle(_client->cr[MTWM_CLIENT_BOX],
@@ -70,7 +73,7 @@ void mtwm_draw_client(mtwm_client * _client){
     cairo_set_line_width(_client->cr[MTWM_CLIENT_BOX], shadow_width);
     cairo_stroke(_client->cr[MTWM_CLIENT_BOX]);
 
-    cairo_surface_flush(_client->surface[MTWM_CLIENT_BOX]);
+    //cairo_surface_flush(_client->surface[MTWM_CLIENT_BOX]);
     
 }
 

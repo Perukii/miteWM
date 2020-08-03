@@ -1,14 +1,29 @@
 
 
+typedef struct _mtwm_client_table_index mtwm_client_table_index;
+typedef struct _mtwm_client_table       mtwm_client_table;
+
+mtwm_client             mtwm_null_client();
+mtwm_client_table_index mtwm_null_client_index();
+
+int           mtwm_client_table_init          (mtwm_client_table *, size_t);
+size_t        mtwm_client_table_add           (mtwm_client_table *, mtwm_client);
+size_t        mtwm_client_table_window_exists (mtwm_client_table *, Window);
+mtwm_client * mtwm_client_table_find          (mtwm_client_table *, Window);
+int           mtwm_client_table_delete        (mtwm_client_table *, Window);
+int           mtwm_client_table_defragment    (mtwm_client_table *);
+int           mtwm_client_table_free          (mtwm_client_table *);
+
+
 // クライアントのテーブル格納用構造体 (以下クライアントインデックス)
-typedef struct{
+typedef struct _mtwm_client_table_index{
     mtwm_client client;                 // クライアント
     Bool exists;                        // クライアントは有効？
     size_t code_forward, code_backward; // テーブル内の前後要素のアドレス
 } mtwm_client_table_index;
 
 // クライアントテーブル
-typedef struct{
+typedef struct _mtwm_client_table{
     mtwm_client_table_index * hasharray;
     size_t current_size;  // 現在のhasharrayのサイズ
     size_t capacity_size; // hasharrayのメモリ確保量
@@ -19,8 +34,12 @@ typedef struct{
 mtwm_client mtwm_null_client(){
     mtwm_client res_client;
     for(unsigned int i=0; i<MTWM_CLIENT_WIDGETS; i++) res_client.window[i] = None;
+
+    res_client.local_border_width  = 0;
+    res_client.local_border_height = 0;
     return res_client;
 }
+
 
 // NULLクライアントインデックス
 mtwm_client_table_index mtwm_null_client_index(){
@@ -51,6 +70,8 @@ int mtwm_client_table_init(mtwm_client_table * _table, size_t _hashcode_max){
 // クライアントテーブルに値を追加
 size_t mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
 
+    //mtwm_client_table_defragment(_table);
+
     // ハッシュ関数
     size_t adress = _client.window[MTWM_CLIENT_BOX] % _table->hashcode_max;
 
@@ -73,10 +94,7 @@ size_t mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
             _table->current_size++;
 
             // hasharrayが満杯になった時、新しいメモリを確保。
-            // hasharrayの占有メモリ量が2倍になる。
-            // TODO : この作業をする前に、無効な(exists == Falseな) クライアントインデックスを
-            //        メモリ内から消し、hasharrayの構造を整理し直す
-            //        メモリコンパクション的な機能が欲しい。
+            // その時、hasharrayの占有メモリ量が2倍になる。
             if(_table->current_size == _table->capacity_size){
                 _table->capacity_size *= 2;
                 _table->hasharray =
@@ -127,24 +145,59 @@ size_t mtwm_client_table_window_exists(mtwm_client_table * _table, Window _targe
 }
 
 // 該当のウインドウをBOXにもつクライアントを探す
-mtwm_client mtwm_client_table_find(mtwm_client_table * _table, Window _target){
+mtwm_client * mtwm_client_table_find(mtwm_client_table * _table, Window _target){
     int address = mtwm_client_table_window_exists(_table, _target);
     if(address != __SIZE_MAX__)
-        return _table->hasharray[address].client;
+        return &_table->hasharray[address].client;
     else 
-        return mtwm_null_client();
+        return NULL;
 }
 
-// 該当のウインドウをBOXにもつクライアントを消す
-// 消すと言うよりも単に、existsをFalseにするだけである。随時メモリコンパクションを行うことでメモリ占有削減を目指す
+// 該当のウインドウをBOXにもつクライアントを消す。
 int mtwm_client_table_delete(mtwm_client_table * _table, Window _target){
     int address = mtwm_client_table_window_exists(_table, _target);
     if(address != __SIZE_MAX__){
+
+        
         _table->hasharray[address].exists = False;
+        
         return 1;
     }
     else
         return 0;
+}
+
+
+// テーブルのデフラグメントを行う。
+int mtwm_client_table_defragment(mtwm_client_table * _table){
+
+    size_t new_current_size = _table->hashcode_max;
+
+    for(size_t i=_table->hashcode_max; i<_table->current_size; i++){
+
+        if(_table->hasharray[i].exists == True && new_current_size != i){
+
+            size_t forward = _table->hasharray[i].code_forward;
+            if(forward != __SIZE_MAX__)
+                _table->hasharray[forward].code_backward = new_current_size;
+
+            size_t backward = _table->hasharray[i].code_backward;
+            _table->hasharray[backward].code_forward = new_current_size;
+
+            _table->hasharray[new_current_size] = _table->hasharray[i];
+
+            new_current_size++;
+
+            _table->hasharray[i].exists = False;
+        }
+    }
+
+    if(_table->current_size == new_current_size) return 0;
+
+    else{
+        _table->current_size = new_current_size;
+        return 1;
+    }
 }
 
 // メモリ開放

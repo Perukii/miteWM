@@ -38,7 +38,7 @@ const unsigned int mtwm_config_titlebar_width_margin = 25;
 // TITLEBARの高さ
 const unsigned int mtwm_config_titlebar_height       = 25;
 // 背景画像のファイル
-const char * background_file = "";
+const char * background_file = "/home/tada/Pictures/screen.png";
 
 // クライアントの影の粗さ。必ず0より大きい値に！
 // 1.5~2.5 ぐらいがいい感じ。粗すぎると変な見た目になるし、逆に

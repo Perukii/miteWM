@@ -4,7 +4,7 @@ int mtwm_new_client(mtwm_client_table * _client_table,
                     Window _targ_window){
 
     if(_targ_window == None) return 0;
-    if(mtwm_client_table_find(_client_table, _targ_window).window[MTWM_CLIENT_BOX] != 0) return 0;
+    if(mtwm_client_table_find(_client_table, _targ_window)!= NULL) return 0;
 
     XWindowAttributes targ_attributes;
     XGetWindowAttributes(mtwm_display, _targ_window, &targ_attributes);

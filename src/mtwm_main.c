@@ -8,7 +8,7 @@ int main(int argc, char ** argv){
     // イベント、クライアントテーブル
     XEvent event;
     mtwm_client_table client_table;
-    mtwm_client_table_init(&client_table, 10);
+    mtwm_client_table_init(&client_table, 1);
 
     // ==== 根ウインドウ ====
 
@@ -40,8 +40,11 @@ int main(int argc, char ** argv){
     grip_info.y_root = 0;
     
     // メインループ。
+    //
     while(1){
         
+        if(XPending(mtwm_display) < 0) goto exit;
+
         // イベントを取得。
         if(XNextEvent(mtwm_display, &event) < 0) goto exit;
         
@@ -72,8 +75,8 @@ int main(int argc, char ** argv){
             // 掴まれているウインドウの情報を更新する作業。
             XGetWindowAttributes(mtwm_display, event.xbutton.subwindow, &grip_info.attributes);
 
-            mtwm_client client = mtwm_client_table_find(&client_table, event.xbutton.subwindow);
-            if(client.window[0] == None) break;
+            mtwm_client * client = mtwm_client_table_find(&client_table, event.xbutton.subwindow);
+            if(client == NULL) break;
 
             grip_info.button = event.xbutton.button;
             grip_info.window = event.xbutton.subwindow;
@@ -83,7 +86,7 @@ int main(int argc, char ** argv){
             // マウスボタンイベント情報を手に入れる。
             // ここでgrip_info.event_propertyに格納された値は、MotionNotifyの項でも利用する。
             mtwm_set_button_event_info(
-                &client,
+                client,
                 event.xmotion.x - grip_info.attributes.x,
                 event.xmotion.y - grip_info.attributes.y,
                 grip_info.attributes.width,
@@ -104,11 +107,14 @@ int main(int argc, char ** argv){
                 delete_event.xclient.format = 32;
                 delete_event.xclient.data.l[0] = XInternAtom(mtwm_display, "WM_DELETE_WINDOW", True);
                 delete_event.xclient.data.l[1] = CurrentTime;
-                delete_event.xclient.window = client.window[MTWM_CLIENT_APP];
+                delete_event.xclient.window = client->window[MTWM_CLIENT_APP];
 
                 // 除去イベントを送信
-                XSendEvent(mtwm_display, client.window[MTWM_CLIENT_APP], False, NoEventMask, &delete_event);
+                XSendEvent(mtwm_display, client->window[MTWM_CLIENT_APP], False, NoEventMask, &delete_event);
             }
+
+            XRaiseWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
+
             break;
             }
 
@@ -121,8 +127,12 @@ int main(int argc, char ** argv){
             // 除去イベント。必ずAPPが除去されている時に送信されなければいけない。
 
             // BOXもろとも除去してしまう。
-            if(mtwm_client_table_find(&client_table, event.xclient.window).window[0] != None){
+            if(event.xclient.window == None) break;
+            if(event.xclient.window == mtwm_root_window) break;
+
+            if(mtwm_client_table_find(&client_table, event.xclient.window)!= NULL){
                 XDestroyWindow(mtwm_display, event.xclient.window);
+                mtwm_client_table_delete(&client_table, event.xclient.window);
             }
             break;
 
@@ -130,8 +140,10 @@ int main(int argc, char ** argv){
             {
             if(grip_info.window == None) break;
 
-            mtwm_client client = mtwm_client_table_find(&client_table, grip_info.window);
-            if(client.window[0] == None) break;
+            mtwm_client * client = mtwm_client_table_find(&client_table, grip_info.window);
+            if(client == NULL) break;
+
+            XLockDisplay(mtwm_display);
 
             int x_diff = event.xbutton.x_root - grip_info.x_root;
             int y_diff = event.xbutton.y_root - grip_info.y_root;
@@ -150,7 +162,7 @@ int main(int argc, char ** argv){
                 x_diff *= ( (grip_info.event_property>>MTWM_RESIZE_ANGLE_START)%2 || (grip_info.event_property>>MTWM_RESIZE_ANGLE_END   )%2);
                 y_diff *= ( (grip_info.event_property>>MTWM_RESIZE_ANGLE_TOP  )%2 || (grip_info.event_property>>MTWM_RESIZE_ANGLE_BOTTOM)%2);
 
-                mtwm_resize_window(&client,
+                mtwm_resize_window(client,
                                    grip_info.attributes.x,
                                    grip_info.attributes.y,
                                    grip_info.attributes.width,
@@ -162,14 +174,18 @@ int main(int argc, char ** argv){
                 
 
             }
-
-
+            
             // 描画を更新。
             mtwm_draw_background();
-            mtwm_draw_client(&client);
-            XFlush(mtwm_display);
+            mtwm_draw_client(client);
+            
             break;
             }
+
+        /**/case ClientMessage:
+            break;
+
+            default:break;
         }
     }
 
