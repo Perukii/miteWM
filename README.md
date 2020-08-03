@@ -10,6 +10,9 @@ This WM basically inherits [sanmitsu-wm](https://github.com/Perukii/sanmitsu-wm)
 
 **We fundamentally use Japanese(language)** for conducting this project, **but you can use English** for commiting and sending issues/pull requests alternatively.
 
+### How to Build
+
+
 ### Licence
 
 GNU General Public License (version 3)
