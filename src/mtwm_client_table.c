@@ -70,7 +70,7 @@ int mtwm_client_table_init(mtwm_client_table * _table, size_t _hashcode_max){
 // クライアントテーブルに値を追加
 size_t mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
 
-    //mtwm_client_table_defragment(_table);
+    mtwm_client_table_defragment(_table);
 
     // ハッシュ関数
     size_t adress = _client.window[MTWM_CLIENT_BOX] % _table->hashcode_max;
@@ -96,6 +96,7 @@ size_t mtwm_client_table_add(mtwm_client_table * _table, mtwm_client _client){
             // hasharrayが満杯になった時、新しいメモリを確保。
             // その時、hasharrayの占有メモリ量が2倍になる。
             if(_table->current_size == _table->capacity_size){
+
                 _table->capacity_size *= 2;
                 _table->hasharray =
                     realloc(_table->hasharray,
@@ -158,8 +159,15 @@ int mtwm_client_table_delete(mtwm_client_table * _table, Window _target){
     int address = mtwm_client_table_window_exists(_table, _target);
     if(address != __SIZE_MAX__){
 
-        
         _table->hasharray[address].exists = False;
+
+        size_t backward = _table->hasharray[address].code_backward;
+        size_t forward = _table->hasharray[address].code_forward;
+        if(backward != __SIZE_MAX__)
+            _table->hasharray[backward].code_forward = forward;
+
+        if(forward != __SIZE_MAX__)
+            _table->hasharray[forward].code_backward = backward;
         
         return 1;
     }
@@ -167,37 +175,44 @@ int mtwm_client_table_delete(mtwm_client_table * _table, Window _target){
         return 0;
 }
 
-
 // テーブルのデフラグメントを行う。
 int mtwm_client_table_defragment(mtwm_client_table * _table){
 
     size_t new_current_size = _table->hashcode_max;
+    int result = 0;
 
-    for(size_t i=_table->hashcode_max; i<_table->current_size; i++){
+    for(size_t i = 0; i<_table->capacity_size; i++){
 
-        if(_table->hasharray[i].exists == True && new_current_size != i){
+        if(_table->hasharray[i].exists == False){
+            _table->hasharray[i] = mtwm_null_client_index();
+            continue;
+        }
 
-            size_t forward = _table->hasharray[i].code_forward;
-            if(forward != __SIZE_MAX__)
-                _table->hasharray[forward].code_backward = new_current_size;
+        if(i >= _table->hashcode_max){
 
-            size_t backward = _table->hasharray[i].code_backward;
-            _table->hasharray[backward].code_forward = new_current_size;
+            if(new_current_size != i){
 
-            _table->hasharray[new_current_size] = _table->hasharray[i];
+                _table->hasharray[new_current_size] = _table->hasharray[i];
+
+                size_t forward = _table->hasharray[i].code_forward;
+                if(forward != __SIZE_MAX__)
+                    _table->hasharray[forward].code_backward = new_current_size;
+                
+                size_t backward = _table->hasharray[i].code_backward;
+                if(backward != __SIZE_MAX__)
+                    _table->hasharray[backward].code_forward = new_current_size;
+
+                _table->hasharray[i].exists = False;
+                result++;
+            }
 
             new_current_size++;
 
-            _table->hasharray[i].exists = False;
         }
     }
 
-    if(_table->current_size == new_current_size) return 0;
-
-    else{
-        _table->current_size = new_current_size;
-        return 1;
-    }
+    _table->current_size = new_current_size;
+    return result;
 }
 
 // メモリ開放

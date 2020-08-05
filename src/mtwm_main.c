@@ -143,8 +143,6 @@ int main(int argc, char ** argv){
             mtwm_client * client = mtwm_client_table_find(&client_table, grip_info.window);
             if(client == NULL) break;
 
-            XLockDisplay(mtwm_display);
-
             int x_diff = event.xbutton.x_root - grip_info.x_root;
             int y_diff = event.xbutton.y_root - grip_info.y_root;
 
@@ -176,7 +174,7 @@ int main(int argc, char ** argv){
             }
             
             // 描画を更新。
-            mtwm_draw_background();
+            //mtwm_draw_background();
             mtwm_draw_client(client);
             
             break;
