@@ -12,19 +12,22 @@ void mtwm_resize_window(mtwm_client * _client,
     if(_x_move) _x_diff *= -1;
     if(_y_move) _y_diff *= -1;
     
+    XSizeHints hints;
+    mtwm_get_size_hints(_client, &hints);
+
     int f_width  = _width  + _x_diff;
     int f_height = _height + _y_diff;
-    const int f_width_max  = _client->local_border_width+1;
-    const int f_height_max = _client->local_border_height+1;
+    const int f_width_min  = _client->local_border_width + 1 + hints.min_width;
+    const int f_height_min = _client->local_border_height+ 1 + hints.min_height;
 
-    if(f_width  <=  f_width_max){
-        _x_diff += (f_width_max-f_width);
-        f_width  =  f_width_max;
+    if(f_width  <=  f_width_min){
+        _x_diff += (f_width_min-f_width);
+        f_width  =  f_width_min;
     }
     
-    if(f_height <=  f_height_max){
-        _y_diff += (f_height_max-f_height);
-        f_height =  f_height_max;
+    if(f_height <=  f_height_min){
+        _y_diff += (f_height_min-f_height);
+        f_height =  f_height_min;
     }
     
     XResizeWindow(mtwm_display, _client->window[MTWM_CLIENT_BOX],
@@ -45,10 +48,4 @@ void mtwm_resize_window(mtwm_client * _client,
                 f_width,
                 f_height);
                 
-
-/*
-    XMoveWindow(mtwm_display, _client->window[MTWM_CLIENT_EXIT],
-                _width + _client->local_border_width/2 - mtwm_config_titlebar_width_margin,
-                mtwm_config_box_border);
-*/
 }

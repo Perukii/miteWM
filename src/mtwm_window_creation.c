@@ -1,4 +1,12 @@
 
+void mtwm_get_size_hints(mtwm_client * _client, XSizeHints * hints){
+    long supplied;
+    XGetWMNormalHints(mtwm_display, _client->window[MTWM_CLIENT_APP], hints, &supplied);
+}
+
+void mtwm_get_class_hint(mtwm_client * _client, XClassHint * hint){
+    XGetClassHint(mtwm_display, _client->window[MTWM_CLIENT_APP], hint);
+}
 
 int mtwm_new_client(mtwm_client_table * _client_table,
                     Window _targ_window){
@@ -68,6 +76,10 @@ int mtwm_new_client(mtwm_client_table * _client_table,
                     box_width,
                     box_height);
     client.cr[MTWM_CLIENT_BOX] = cairo_create(client.surface[MTWM_CLIENT_BOX]);
+    
+    XClassHint hint;
+    mtwm_get_class_hint(&client, &hint);
+    client.title = hint.res_class;
 
     cairo_set_operator  (client.cr[MTWM_CLIENT_BOX], CAIRO_OPERATOR_SOURCE);
     cairo_set_antialias (client.cr[MTWM_CLIENT_BOX], CAIRO_ANTIALIAS_SUBPIXEL);

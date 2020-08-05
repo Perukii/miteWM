@@ -8,7 +8,7 @@ int main(int argc, char ** argv){
     // イベント、クライアントテーブル
     XEvent event;
     mtwm_client_table client_table;
-    mtwm_client_table_init(&client_table, 1);
+    mtwm_client_table_init(&client_table, 10);
 
     // ==== 根ウインドウ ====
 
@@ -70,13 +70,16 @@ int main(int argc, char ** argv){
 
             // 無またはバックグラウンドウインドウを取得した場合
             if(event.xbutton.subwindow == None) break;
-            if(event.xbutton.subwindow == mtwm_background.window) break;
-
-            // 掴まれているウインドウの情報を更新する作業。
-            XGetWindowAttributes(mtwm_display, event.xbutton.subwindow, &grip_info.attributes);
 
             mtwm_client * client = mtwm_client_table_find(&client_table, event.xbutton.subwindow);
-            if(client == NULL) break;
+
+            if(   client->window[MTWM_CLIENT_BOX] == None
+               || client->window[MTWM_CLIENT_BOX] == mtwm_background.window
+               || client->window[MTWM_CLIENT_BOX] == mtwm_root_window) break;
+
+
+            // 掴まれているウインドウの情報を更新する作業。
+            XGetWindowAttributes(mtwm_display, client->window[MTWM_CLIENT_BOX], &grip_info.attributes);
 
             grip_info.button = event.xbutton.button;
             grip_info.window = event.xbutton.subwindow;
