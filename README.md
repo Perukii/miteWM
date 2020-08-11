@@ -28,17 +28,21 @@ This WM basically inherits [sanmitsu-wm](https://github.com/Perukii/sanmitsu-wm)
 ビルドにはX11が利用可能な環境が必要です。<br>
 
 1.`libX11` `libcairo` をインストールします。<br>
+
 2.`$ make`を実行します。 <br>
+
 3.正常なコンパイルが完了した場合、`$ make set_xinitrc` を行います。<br>
+
 **なお実行前に、`~/.xinitrc`がまだファイルシステム上に存在していないこと確認してください。既に存在する場合は、上書きされても構わない内容であるかどうかを確認して実行するか、Makefileを参考に自分で書いて下さい。** <br> 
 自分で書く場合は、WM実行前に`xcompmgr`を、実行後すぐに`xterm`等ターミナルが実行される必要があることに注意してください。
 
 ここで、X11のセッションが無効である(または無効となっているttyに移動している)ことを確認してください。まだ出来ていない場合は、直ちに行って下さい。<br>
+
 4.`$ startx`を実行します。
 
 # その他
 
-AUTHOR : Perukii {Tada Teruki (多田 瑛貴)}
+AUTHOR : Perukii {Tada Teruki (多田 瑛貴)} <br>
 LICENCE : GPL-v3
 
 
