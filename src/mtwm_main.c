@@ -42,7 +42,7 @@ int main(int argc, char ** argv){
     grip_info.x_root = 0;
     grip_info.y_root = 0;
 
-    Window last_ungrabed_app = None;
+    Window last_ungrabbed_app = None;
     
     // メインループ。
     //
@@ -128,12 +128,13 @@ int main(int argc, char ** argv){
             XRaiseWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
             XSetInputFocus(mtwm_display, client->window[MTWM_CLIENT_APP], RevertToNone, CurrentTime);
             
-            if(last_ungrabed_app != None){
-                XGrabButton(mtwm_display, AnyButton, AnyModifier, last_ungrabed_app, False,
+            if(last_ungrabbed_app != None){
+                XGrabButton(mtwm_display, AnyButton, AnyModifier, last_ungrabbed_app, False,
                     ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
             }
             XUngrabButton(mtwm_display, AnyButton, AnyModifier, client->window[MTWM_CLIENT_APP]);
-            last_ungrabed_app = client->window[MTWM_CLIENT_APP];
+            last_ungrabbed_app = client->window[MTWM_CLIENT_APP];
+
             break;
             }
 
@@ -152,9 +153,14 @@ int main(int argc, char ** argv){
             if(event.xclient.window == None) break;
             if(event.xclient.window == mtwm_root_window) break;
 
-            if(mtwm_client_table_find(&client_table, event.xclient.window)!= NULL){
-                XDestroyWindow(mtwm_display, event.xclient.window);
-                mtwm_client_table_delete(&client_table, event.xclient.window);
+            mtwm_client * client = mtwm_client_table_find(&client_table, event.xclient.window);
+
+            if(client != NULL){
+                if(last_ungrabbed_app == client->window[MTWM_CLIENT_APP]){
+                    last_ungrabbed_app = None;
+                }
+                XDestroyWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
+                mtwm_client_table_delete(&client_table, client->window[MTWM_CLIENT_BOX]);
             }
             break;
 
