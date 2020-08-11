@@ -23,6 +23,11 @@ int mtwm_new_client(mtwm_client_table * _client_table,
 
     mtwm_client client;
     client.window[MTWM_CLIENT_APP] = _targ_window;
+    
+    XGrabButton(mtwm_display, AnyButton, AnyModifier, client.window[MTWM_CLIENT_APP], False,
+        ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+    
+    
 
     // ---------------
     // ===== BOX =====

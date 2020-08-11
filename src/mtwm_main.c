@@ -41,6 +41,8 @@ int main(int argc, char ** argv){
     grip_info.window = None;
     grip_info.x_root = 0;
     grip_info.y_root = 0;
+
+    Window last_ungrabed_app = None;
     
     // メインループ。
     //
@@ -77,50 +79,61 @@ int main(int argc, char ** argv){
 
             mtwm_client * client = mtwm_client_table_find(&client_table, event.xbutton.subwindow);
 
-            if(client->window[MTWM_CLIENT_BOX] == None ) break;
-
-
-            // 掴まれているウインドウの情報を更新する作業。
-            XGetWindowAttributes(mtwm_display, client->window[MTWM_CLIENT_BOX], &grip_info.attributes);
-
-            grip_info.button = event.xbutton.button;
-            grip_info.window = event.xbutton.subwindow;
-            grip_info.x_root = event.xbutton.x_root;
-            grip_info.y_root = event.xbutton.y_root;
-
-            // マウスボタンイベント情報を手に入れる。
-            // ここでgrip_info.event_propertyに格納された値は、MotionNotifyの項でも利用する。
-            mtwm_set_button_event_info(
-                client,
-                event.xmotion.x - grip_info.attributes.x,
-                event.xmotion.y - grip_info.attributes.y,
-                grip_info.attributes.width,
-                grip_info.attributes.height,
-                &grip_info.event_property);
-              
-            // EXITボタンが押されている時
-            if((grip_info.event_property>>MTWM_EXIT_PRESSED)%2){
-                
-                // APPが「自ら除去イベントを送信した」という状況を再現している。
-                // しかし、APPは実は本意ではなかったのかもしれない。
-                // 悲しい。
-
-                // 除去イベントを設定
-                XEvent delete_event;
-                delete_event.xclient.type = ClientMessage;
-                delete_event.xclient.message_type = XInternAtom(mtwm_display, "WM_PROTOCOLS", True);
-                delete_event.xclient.format = 32;
-                delete_event.xclient.data.l[0] = XInternAtom(mtwm_display, "WM_DELETE_WINDOW", True);
-                delete_event.xclient.data.l[1] = CurrentTime;
-                delete_event.xclient.window = client->window[MTWM_CLIENT_APP];
-
-                // 除去イベントを送信
-                XSendEvent(mtwm_display, client->window[MTWM_CLIENT_APP], False, NoEventMask, &delete_event);
+            if(client == NULL){
+                Window parent, root, *child;
+                unsigned int child_num;
+                XQueryTree(mtwm_display, event.xbutton.window, &root, &parent, &child, &child_num);
+                client = mtwm_client_table_find(&client_table, parent);
+                if(client == NULL) break;
             }
+            else{
+                // 掴まれているウインドウの情報を更新する作業。
+                XGetWindowAttributes(mtwm_display, client->window[MTWM_CLIENT_BOX], &grip_info.attributes);
 
+                grip_info.button = event.xbutton.button;
+                grip_info.window = event.xbutton.subwindow;
+                grip_info.x_root = event.xbutton.x_root;
+                grip_info.y_root = event.xbutton.y_root;
+
+                // マウスボタンイベント情報を手に入れる。
+                // ここでgrip_info.event_propertyに格納された値は、MotionNotifyの項でも利用する。
+                mtwm_set_button_event_info(
+                    client,
+                    event.xmotion.x - grip_info.attributes.x,
+                    event.xmotion.y - grip_info.attributes.y,
+                    grip_info.attributes.width,
+                    grip_info.attributes.height,
+                    &grip_info.event_property);
+                
+                // EXITボタンが押されている時
+                if((grip_info.event_property>>MTWM_EXIT_PRESSED)%2){
+                    
+                    // APPが「自ら除去イベントを送信した」という状況を再現している。
+                    // しかし、APPは実は本意ではなかったのかもしれない。
+                    // 悲しい。
+
+                    // 除去イベントを設定
+                    XEvent delete_event;
+                    delete_event.xclient.type = ClientMessage;
+                    delete_event.xclient.message_type = XInternAtom(mtwm_display, "WM_PROTOCOLS", True);
+                    delete_event.xclient.format = 32;
+                    delete_event.xclient.data.l[0] = XInternAtom(mtwm_display, "WM_DELETE_WINDOW", True);
+                    delete_event.xclient.data.l[1] = CurrentTime;
+                    delete_event.xclient.window = client->window[MTWM_CLIENT_APP];
+
+                    // 除去イベントを送信
+                    XSendEvent(mtwm_display, client->window[MTWM_CLIENT_APP], False, NoEventMask, &delete_event);
+                }
+            }
             XRaiseWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
             XSetInputFocus(mtwm_display, client->window[MTWM_CLIENT_APP], RevertToNone, CurrentTime);
-
+            
+            if(last_ungrabed_app != None){
+                XGrabButton(mtwm_display, AnyButton, AnyModifier, last_ungrabed_app, False,
+                    ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+            }
+            XUngrabButton(mtwm_display, AnyButton, AnyModifier, client->window[MTWM_CLIENT_APP]);
+            last_ungrabed_app = client->window[MTWM_CLIENT_APP];
             break;
             }
 

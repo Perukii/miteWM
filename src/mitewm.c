@@ -48,10 +48,11 @@ const unsigned int mtwm_width_diff  = mtwm_config_box_border*2;
 const unsigned int mtwm_height_diff = mtwm_config_titlebar_height + mtwm_config_box_border*2;
 
 #include "mtwm_test.c"
+#include "mtwm_background.c"
 #include "mtwm_client.c"
 #include "mtwm_client_table.c"
 #include "mtwm_client_creation.c"
 #include "mtwm_client_resize.c"
-#include "mtwm_background.c"
+
 #include "mtwm_main.c"
 
