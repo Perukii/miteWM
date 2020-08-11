@@ -27,7 +27,7 @@ int mtwm_new_client(mtwm_client_table * _client_table,
     // ---------------
     // ===== BOX =====
     // ---------------
-
+    
     client.local_border_width  =
         mtwm_width_diff  + targ_attributes.border_width*2;
     client.local_border_height =
@@ -36,6 +36,7 @@ int mtwm_new_client(mtwm_client_table * _client_table,
     unsigned int box_width = client.local_border_width + targ_attributes.width;
     unsigned int box_height = client.local_border_height + targ_attributes.height;
 
+    
     XVisualInfo box_visual_info;
     XMatchVisualInfo(mtwm_display, DefaultScreen(mtwm_display), 32, TrueColor, &box_visual_info);
 
@@ -61,9 +62,7 @@ int mtwm_new_client(mtwm_client_table * _client_table,
     // ウインドウの設定
     XReparentWindow      (mtwm_display, client.window[MTWM_CLIENT_APP], client.window[MTWM_CLIENT_BOX],
                           mtwm_config_box_border, mtwm_config_titlebar_height + mtwm_config_box_border);
-    XDefineCursor        (mtwm_display, client.window[MTWM_CLIENT_BOX],
-                          XCreateFontCursor(mtwm_display, XC_plus));
-    XMapWindow           (mtwm_display, client.window[MTWM_CLIENT_BOX]);
+    XMapRaised           (mtwm_display, client.window[MTWM_CLIENT_BOX]);
     XSelectInput         (mtwm_display, client.window[MTWM_CLIENT_BOX], SubstructureNotifyMask);
 
     // ウインドウのcairoコンテキストを作成

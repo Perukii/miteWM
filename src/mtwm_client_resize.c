@@ -36,7 +36,7 @@ void mtwm_resize_window(mtwm_client * _client,
     
     XResizeWindow(mtwm_display, _client->window[MTWM_CLIENT_APP],
                 f_width  - _client->local_border_width,
-                f_height - _client->local_border_height);
+                f_height - _client->local_border_height);      
 
     XMoveWindow(mtwm_display, _client->window[MTWM_CLIENT_BOX],
                 _x+_x_diff*(-_x_move),

@@ -22,6 +22,9 @@ int main(int argc, char ** argv){
     if(background_file != ""){
         mtwm_set_background(background_file);
     }
+
+    XDefineCursor(mtwm_display, mtwm_root_window,
+                  XCreateFontCursor(mtwm_display, XC_left_ptr));
    
 
     // 掴まれているウインドウの情報。
@@ -70,12 +73,11 @@ int main(int argc, char ** argv){
 
             // 無またはバックグラウンドウインドウを取得した場合
             if(event.xbutton.subwindow == None) break;
+            if(event.xbutton.subwindow == mtwm_background.window) break;
 
             mtwm_client * client = mtwm_client_table_find(&client_table, event.xbutton.subwindow);
 
-            if(   client->window[MTWM_CLIENT_BOX] == None
-               || client->window[MTWM_CLIENT_BOX] == mtwm_background.window
-               || client->window[MTWM_CLIENT_BOX] == mtwm_root_window) break;
+            if(client->window[MTWM_CLIENT_BOX] == None ) break;
 
 
             // 掴まれているウインドウの情報を更新する作業。
@@ -117,6 +119,7 @@ int main(int argc, char ** argv){
             }
 
             XRaiseWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
+            XSetInputFocus(mtwm_display, client->window[MTWM_CLIENT_APP], RevertToNone, CurrentTime);
 
             break;
             }
@@ -126,6 +129,9 @@ int main(int argc, char ** argv){
             grip_info.window = None;
             break;
 
+        /**/case ConfigureNotify:
+            break;
+            
         /**/case DestroyNotify:
             // 除去イベント。必ずAPPが除去されている時に送信されなければいけない。
 
@@ -182,9 +188,6 @@ int main(int argc, char ** argv){
             
             break;
             }
-
-        /**/case ClientMessage:
-            break;
 
             default:break;
         }

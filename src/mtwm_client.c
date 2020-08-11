@@ -42,8 +42,8 @@ void mtwm_draw_client(mtwm_client * _client){
                                                     titlebar_width*0.0,
                                                     mtwm_config_titlebar_height*1.0);
 
-    cairo_pattern_add_color_stop_rgba (titlebar_pattern, 1, 1.0, 1.0, 1.0, 1.0);
-    cairo_pattern_add_color_stop_rgba (titlebar_pattern, 0, 1.0, 1.0, 1.0, 0.5);
+    cairo_pattern_add_color_stop_rgb (titlebar_pattern, 1, 1.0, 1.0, 1.0);
+    cairo_pattern_add_color_stop_rgb (titlebar_pattern, 0, 0.6, 0.9, 1.0);
     cairo_set_source(_client->cr[MTWM_CLIENT_BOX], titlebar_pattern);
 
     cairo_rectangle(_client->cr[MTWM_CLIENT_BOX],
