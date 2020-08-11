@@ -35,3 +35,10 @@ This WM basically inherits [sanmitsu-wm](https://github.com/Perukii/sanmitsu-wm)
 
 ここで、X11のセッションが無効である(または無効となっているttyに移動している)ことを確認してください。まだ出来ていない場合は、直ちに行って下さい。<br>
 4.`$ startx`を実行します。
+
+# その他
+
+AUTHOR : Perukii {Tada Teruki (多田 瑛貴)}
+LICENCE : GPL-v3
+
+
