@@ -1,7 +1,6 @@
 # miteWM
 
-![mitewmLogo](https://user-images.githubusercontent.com/57752033/89972859-de8b4e80-dc99-11ea-889c-2acb687d2c32.png)
-
+![mitewmLogo_fixed](https://user-images.githubusercontent.com/57752033/89973051-56597900-dc9a-11ea-98b0-a64314a7ef1f.png)
 
 ![doga-mite3](https://user-images.githubusercontent.com/57752033/89909409-004ced00-dc2a-11ea-980a-7ff7d0de59aa.gif)
 
