@@ -1,4 +1,7 @@
-# MiteWM
+# miteWM
+
+![mitewmLogo](https://user-images.githubusercontent.com/57752033/89972859-de8b4e80-dc99-11ea-889c-2acb687d2c32.png)
+
 
 ![doga-mite3](https://user-images.githubusercontent.com/57752033/89909409-004ced00-dc2a-11ea-980a-7ff7d0de59aa.gif)
 
