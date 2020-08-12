@@ -2,8 +2,6 @@
 
 ![mitewmLogo_fixed](https://user-images.githubusercontent.com/57752033/89973051-56597900-dc9a-11ea-98b0-a64314a7ef1f.png)
 
-![doga-mite3](https://user-images.githubusercontent.com/57752033/89909409-004ced00-dc2a-11ea-980a-7ff7d0de59aa.gif)
-
 
 **MiteWM**は、X11ベースのLinux向け軽量ウインドウマネージャ(WM)です。 <br>
 
@@ -22,6 +20,10 @@ and additionally provides some original functions.
 **We fundamentally use Japanese(language)** for conducting this project, **but you can use English** for commiting and sending issues/pull requests alternatively.
 
 ___
+
+# Preview　(latest release)
+
+![doga-mite3](https://user-images.githubusercontent.com/57752033/89909409-004ced00-dc2a-11ea-980a-7ff7d0de59aa.gif)
 
 ### 使用ライブラリ・アプリケーション
 
@@ -66,7 +68,7 @@ JSONファイル`mitewm_config.json`を作成/編集することで、ビジュ�
 
 例 : `"background_image_file" : "/home/path/to/image.png"` 
 
-# その他
+# LICENCE
 
 AUTHOR : Perukii {Tada Teruki (多田 瑛貴)} <br>
 LICENCE : GPL-v3
