@@ -1,7 +1,6 @@
 # miteWM
 
-![mitewmLogo_fixed](https://user-images.githubusercontent.com/57752033/89973051-56597900-dc9a-11ea-98b0-a64314a7ef1f.png)
-
+![mitewmLogo_fixed](https://user-images.githubusercontent.com/57752033/89973612-ba307180-dc9b-11ea-9a59-2b2879c72886.png)
 
 **MiteWM**は、X11ベースのLinux向け軽量ウインドウマネージャ(WM)です。 <br>
 
