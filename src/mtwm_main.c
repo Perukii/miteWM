@@ -1,9 +1,30 @@
 
 
 int main(int argc, char ** argv){
-    
+
     mtwm_display    = XOpenDisplay(0);
     if(mtwm_display == NULL) return 1;
+
+    // 背景画像のファイル
+    char * background_file = "";
+
+    // JSONファイルを読み込む処理。
+    struct json_object * json_obj;
+    if(argc > 1){
+
+        printf("%s\n",argv[1]);
+        json_obj = json_object_from_file(argv[1]);
+
+        if(json_obj != NULL){
+            json_object_object_foreach(json_obj, key, val) {
+                if( strcmp(key,"background_image_file") == 0 ){
+                    background_file = (char*)json_object_get_string(val);
+                }
+            }
+        }
+    }
+
+
 
     // イベント、クライアントテーブル
     XEvent event;
@@ -42,6 +63,7 @@ int main(int argc, char ** argv){
     grip_info.x_root = 0;
     grip_info.y_root = 0;
 
+    // 最後にUngrabされた = 現在フォーカスされているウインドウ。
     Window last_ungrabbed_app = None;
     
     // メインループ。
