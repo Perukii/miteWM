@@ -11,7 +11,6 @@ int main(int argc, char ** argv){
     // JSONファイルを読み込む処理。
     struct json_object * json_obj;
     if(argc > 1){
-
         printf("%s\n",argv[1]);
         json_obj = json_object_from_file(argv[1]);
 
@@ -23,8 +22,6 @@ int main(int argc, char ** argv){
             }
         }
     }
-
-
 
     // イベント、クライアントテーブル
     XEvent event;
@@ -143,6 +140,8 @@ int main(int argc, char ** argv){
                     // 除去イベントを送信
                     XSendEvent(mtwm_display, client->window[MTWM_CLIENT_APP], False, NoEventMask, &delete_event);
                 }
+
+
             }
 
             XRaiseWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
@@ -164,28 +163,9 @@ int main(int argc, char ** argv){
             break;
 
         /**/case ConfigureNotify:
-            {
-            mtwm_client * client = mtwm_client_table_find_from_app(&client_table, event.xconfigure.window);
-            if(client == NULL){
-                break;
-            }
-
-            int f_width = event.xconfigure.width  + client->local_border_width;
-            int f_height = event.xconfigure.height + client->local_border_height;
-
-            XResizeWindow(mtwm_display, client->window[MTWM_CLIENT_BOX],
-                f_width,
-                f_height);  
-
-            cairo_xlib_surface_set_size( client->surface[MTWM_CLIENT_BOX],
-                        f_width,
-                        f_height);
-
-            // 描画を更新。
-            mtwm_draw_client(client);
-            
+            mtwm_config_notify(mtwm_client_table_find_from_app(&client_table, event.xconfigure.window), &event);
             break;
-            }
+            
             
         /**/case DestroyNotify:
             // 除去イベント。必ずAPPが除去されている時に送信されなければいけない。
@@ -196,13 +176,14 @@ int main(int argc, char ** argv){
 
             mtwm_client * client = mtwm_client_table_find(&client_table, event.xclient.window);
 
-            if(client != NULL){
-                if(last_ungrabbed_app == client->window[MTWM_CLIENT_APP]){
-                    last_ungrabbed_app = None;
-                }
-                XDestroyWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
-                mtwm_client_table_delete(&client_table, client->window[MTWM_CLIENT_BOX]);
+            if(client == NULL) break;
+
+            if(last_ungrabbed_app == client->window[MTWM_CLIENT_APP]){
+                last_ungrabbed_app = None;
             }
+            XDestroyWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
+            mtwm_client_table_delete(&client_table, client->window[MTWM_CLIENT_BOX]);
+            
             break;
 
         /**/case MotionNotify:
@@ -241,11 +222,6 @@ int main(int argc, char ** argv){
                 
 
             }
-            
-            // 描画を更新。
-            //mtwm_draw_background();
-            //mtwm_draw_client(client);
-            
             break;
             }
 

@@ -9,7 +9,7 @@ typedef struct{
     int local_border_height;
 } mtwm_client;
 
-
+// クライアントの描画
 void mtwm_draw_client(mtwm_client * _client){
 
     const int overall_width  = cairo_xlib_surface_get_width (_client->surface[MTWM_CLIENT_BOX]);
@@ -23,7 +23,8 @@ void mtwm_draw_client(mtwm_client * _client){
     const double shade_box_border = mtwm_config_box_border - mtwm_config_empty_box_border + mtwm_config_shadow_roughness;
 
     for(double i=0; i<shade_box_border; i += mtwm_config_shadow_roughness){
-        cairo_set_source_rgba(_client->cr[MTWM_CLIENT_BOX], 0, 0, 0, 0.3/shade_box_border*i);
+        cairo_set_source_rgba(_client->cr[MTWM_CLIENT_BOX], 0, 0, 0,
+                0.1/shade_box_border*i*i/mtwm_config_shadow_roughness);
         cairo_rectangle(_client->cr[MTWM_CLIENT_BOX],
                         i+mtwm_config_empty_box_border,
                         i+mtwm_config_empty_box_border,
@@ -42,8 +43,8 @@ void mtwm_draw_client(mtwm_client * _client){
                                                     titlebar_width*0.0,
                                                     mtwm_config_titlebar_height*1.0);
 
-    cairo_pattern_add_color_stop_rgb (titlebar_pattern, 1, 1.0, 1.0, 1.0);
-    cairo_pattern_add_color_stop_rgb (titlebar_pattern, 0, 0.6, 0.9, 1.0);
+    cairo_pattern_add_color_stop_rgb (titlebar_pattern, 1, 0.2, 0.2, 0.2);
+    cairo_pattern_add_color_stop_rgb (titlebar_pattern, 0, 0.4, 0.4, 0.4);
     cairo_set_source(_client->cr[MTWM_CLIENT_BOX], titlebar_pattern);
 
     cairo_rectangle(_client->cr[MTWM_CLIENT_BOX],
@@ -53,14 +54,14 @@ void mtwm_draw_client(mtwm_client * _client){
                     mtwm_config_titlebar_height);
     cairo_fill(_client->cr[MTWM_CLIENT_BOX]);
 
-    cairo_set_source_rgb(_client->cr[MTWM_CLIENT_BOX], 0.4, 0.4, 0.4);
+    cairo_set_source_rgb(_client->cr[MTWM_CLIENT_BOX], 0.9, 0.9, 0.9);
 
-    cairo_select_font_face(_client->cr[MTWM_CLIENT_BOX], "Arial",
+    cairo_select_font_face(_client->cr[MTWM_CLIENT_BOX], "FreeMono",
         CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_BOLD);
 
     cairo_set_font_size(_client->cr[MTWM_CLIENT_BOX], 20);
-    cairo_move_to(_client->cr[MTWM_CLIENT_BOX], _client->local_border_width/2, mtwm_config_titlebar_height + mtwm_config_box_border);
+    cairo_move_to(_client->cr[MTWM_CLIENT_BOX], _client->local_border_width/2 + 5.0, mtwm_config_titlebar_height + mtwm_config_box_border - 2.0);
     cairo_show_text(_client->cr[MTWM_CLIENT_BOX], _client->title); 
 
     // EXITボタンの描画
@@ -85,6 +86,7 @@ void mtwm_draw_client(mtwm_client * _client){
     
 }
 
+// カーソルがBOX内のどこに触れているのか？を調べる
 void mtwm_set_button_event_info(mtwm_client * _client,
                                 int pointer_x,
                                 int pointer_y,

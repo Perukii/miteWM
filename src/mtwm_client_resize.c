@@ -1,4 +1,7 @@
 
+void mtwm_resize_window(mtwm_client *, int, int, int, int, int, int, Bool, Bool);
+void mtwm_config_notify(mtwm_client *, XEvent *);
+
 void mtwm_resize_window(mtwm_client * _client,
                         int _x,
                         int _y,
@@ -29,21 +32,34 @@ void mtwm_resize_window(mtwm_client * _client,
         _y_diff += (f_height_min-f_height);
         f_height =  f_height_min;
     }
-    /*
-    XResizeWindow(mtwm_display, _client->window[MTWM_CLIENT_BOX],
-                f_width,
-                f_height);
-    */
     
-    XResizeWindow(mtwm_display, _client->window[MTWM_CLIENT_APP],
-                f_width  - _client->local_border_width,
-                f_height - _client->local_border_height);      
-
     XMoveWindow(mtwm_display, _client->window[MTWM_CLIENT_BOX],
                 _x+_x_diff*(-_x_move),
                 _y+_y_diff*(-_y_move));
 
-    // TODO : サイズを0未満に変えようとするとフリーズ
+    XResizeWindow(mtwm_display, _client->window[MTWM_CLIENT_APP],
+                f_width  - _client->local_border_width,
+                f_height - _client->local_border_height);    
+
+    // この後、mtwm_config_notify()が呼び出されるわけ
                 
 }
 
+void mtwm_config_notify(mtwm_client * _client, XEvent * _event){
+    
+    if(_client == NULL) return;
+
+    int f_width =  _event->xconfigure.width  + _client->local_border_width;
+    int f_height = _event->xconfigure.height + _client->local_border_height;
+
+    XResizeWindow(mtwm_display, _client->window[MTWM_CLIENT_BOX],
+        f_width,
+        f_height);
+
+    cairo_xlib_surface_set_size( _client->surface[MTWM_CLIENT_BOX],
+                f_width,
+                f_height);
+
+    // 描画を更新。
+    mtwm_draw_client(_client);
+}

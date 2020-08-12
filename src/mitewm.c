@@ -52,16 +52,15 @@ Window   mtwm_root_window;
 // クライアントの枠線の幅。
 const unsigned int mtwm_config_box_border            = 12;
 // クライアントの枠線の幅のうち、影を描画しない外側の部分。
-const unsigned int mtwm_config_empty_box_border      = 6;
+const unsigned int mtwm_config_empty_box_border      = 4;
 // クライアントのTITLEBARの右端とAPPの右端のX座標の差 = EXITの幅
 const unsigned int mtwm_config_titlebar_width_margin = 25;
 // TITLEBARの高さ
 const unsigned int mtwm_config_titlebar_height       = 25;
 
-
 // クライアントの影の粗さ。必ず0より大きい値に！
 // 1.5~2.5 ぐらいがいい感じ。粗すぎると変な見た目になるし、逆に
-const double mtwm_config_shadow_roughness            = 2.0;
+const double mtwm_config_shadow_roughness            = 1.5;
 
 const unsigned int mtwm_width_diff  = mtwm_config_box_border*2;
 const unsigned int mtwm_height_diff = mtwm_config_titlebar_height + mtwm_config_box_border*2;
