@@ -66,7 +66,7 @@ int main(int argc, char ** argv){
             }
 
             // それ以外は、基本的に新しいクライアントとして登録。
-            mtwm_new_client(&client_table, event.xmap.window);
+            mtwm_new_client(&client_table, event.xmap.window, &last_ungrabbed_app);
             
             break;
 
@@ -80,10 +80,7 @@ int main(int argc, char ** argv){
             mtwm_client * client = mtwm_client_table_find(&client_table, event.xbutton.subwindow);
 
             if(client == NULL){
-                Window parent, root, *child;
-                unsigned int child_num;
-                XQueryTree(mtwm_display, event.xbutton.window, &root, &parent, &child, &child_num);
-                client = mtwm_client_table_find(&client_table, parent);
+                client = mtwm_client_table_find_from_app(&client_table, event.xbutton.window);
                 if(client == NULL) break;
             }
             else{
@@ -125,6 +122,7 @@ int main(int argc, char ** argv){
                     XSendEvent(mtwm_display, client->window[MTWM_CLIENT_APP], False, NoEventMask, &delete_event);
                 }
             }
+
             XRaiseWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
             XSetInputFocus(mtwm_display, client->window[MTWM_CLIENT_APP], RevertToNone, CurrentTime);
             
@@ -144,7 +142,28 @@ int main(int argc, char ** argv){
             break;
 
         /**/case ConfigureNotify:
+            {
+            mtwm_client * client = mtwm_client_table_find_from_app(&client_table, event.xconfigure.window);
+            if(client == NULL){
+                break;
+            }
+
+            int f_width = event.xconfigure.width  + client->local_border_width;
+            int f_height = event.xconfigure.height + client->local_border_height;
+
+            XResizeWindow(mtwm_display, client->window[MTWM_CLIENT_BOX],
+                f_width,
+                f_height);  
+
+            cairo_xlib_surface_set_size( client->surface[MTWM_CLIENT_BOX],
+                        f_width,
+                        f_height);
+
+            // 描画を更新。
+            mtwm_draw_client(client);
+            
             break;
+            }
             
         /**/case DestroyNotify:
             // 除去イベント。必ずAPPが除去されている時に送信されなければいけない。
@@ -203,7 +222,7 @@ int main(int argc, char ** argv){
             
             // 描画を更新。
             //mtwm_draw_background();
-            mtwm_draw_client(client);
+            //mtwm_draw_client(client);
             
             break;
             }

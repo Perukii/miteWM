@@ -29,10 +29,11 @@ void mtwm_resize_window(mtwm_client * _client,
         _y_diff += (f_height_min-f_height);
         f_height =  f_height_min;
     }
-    
+    /*
     XResizeWindow(mtwm_display, _client->window[MTWM_CLIENT_BOX],
                 f_width,
                 f_height);
+    */
     
     XResizeWindow(mtwm_display, _client->window[MTWM_CLIENT_APP],
                 f_width  - _client->local_border_width,
@@ -43,9 +44,6 @@ void mtwm_resize_window(mtwm_client * _client,
                 _y+_y_diff*(-_y_move));
 
     // TODO : サイズを0未満に変えようとするとフリーズ
-
-    cairo_xlib_surface_set_size( _client->surface[MTWM_CLIENT_BOX],
-                f_width,
-                f_height);
                 
 }
+

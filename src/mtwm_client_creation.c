@@ -9,7 +9,8 @@ void mtwm_get_class_hint(mtwm_client * _client, XClassHint * hint){
 }
 
 int mtwm_new_client(mtwm_client_table * _client_table,
-                    Window _targ_window){
+                    Window _targ_window,
+                    Window * _last_ungrabbed_app){
 
     if(_targ_window == None) return 0;
     if(mtwm_client_table_find(_client_table, _targ_window)!= NULL) return 0;
@@ -23,11 +24,17 @@ int mtwm_new_client(mtwm_client_table * _client_table,
 
     mtwm_client client;
     client.window[MTWM_CLIENT_APP] = _targ_window;
-    
+
     XGrabButton(mtwm_display, AnyButton, AnyModifier, client.window[MTWM_CLIENT_APP], False,
         ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-    
-    
+
+    if(*_last_ungrabbed_app != None){
+        XGrabButton(mtwm_display, AnyButton, AnyModifier, *_last_ungrabbed_app, False,
+            ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+    }
+    (*_last_ungrabbed_app) = None;
+
+    XSetInputFocus(mtwm_display, client.window[MTWM_CLIENT_APP], RevertToNone, CurrentTime);
 
     // ---------------
     // ===== BOX =====
