@@ -40,13 +40,17 @@ This WM basically inherits [sanmitsu-wm](https://github.com/Perukii/sanmitsu-wm)
 
 4.`$ startx`を実行します。
 
-##### 設定の変更
+### 詳細設定について
 
 JSONファイル`mitewm_config.json`を作成/編集することで、ビジュアルなどの変更が可能です。<br>
 (**なお、現時点ではまだ"背景画像の変更"しか実装していません**)
 
 `mitewm_config.json`を新しく生成したい場合、`$ make create_config` を実行してください。
 
+##### キー
+
+`background_image_file` : 背景画像ファイルの(絶対)パス。<br>
+例 : `"background_image_file" : "/home/path/to/image.png"` 
 
 # その他
 
