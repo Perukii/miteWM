@@ -1,4 +1,10 @@
-
+// 掴まれているウインドウの情報。
+typedef struct{
+    unsigned int button, event_property;
+    int x_root, y_root;
+    Window window;
+    XWindowAttributes attributes;
+} mtwm_ginfo;
 
 int main(int argc, char ** argv){
 
@@ -40,18 +46,8 @@ int main(int argc, char ** argv){
     if(background_file != ""){
         mtwm_set_background(background_file);
     }
-
-    XDefineCursor(mtwm_display, mtwm_root_window,
-                  XCreateFontCursor(mtwm_display, XC_left_ptr));
-   
-
-    // 掴まれているウインドウの情報。
-    struct{
-        unsigned int button, event_property;
-        int x_root, y_root;
-        Window window;
-        XWindowAttributes attributes;
-    } grip_info;
+    
+    mtwm_ginfo grip_info;
 
     // ...の、初期化。
     grip_info.button = 0;
@@ -63,6 +59,10 @@ int main(int argc, char ** argv){
     // 最後にUngrabされた = 現在フォーカスされているウインドウ。
     Window last_ungrabbed_app = None;
     
+    // カーソルを定義。
+    XDefineCursor(mtwm_display, mtwm_root_window,
+            XCreateFontCursor(mtwm_display, XC_left_ptr));
+
     // メインループ。
     //
     while(1){
@@ -86,8 +86,16 @@ int main(int argc, char ** argv){
 
             // それ以外は、基本的に新しいクライアントとして登録。
             mtwm_new_client(&client_table, event.xmap.window, &last_ungrabbed_app);
+
+
+            if(last_ungrabbed_app != None)
+                mtwm_draw_client(mtwm_client_table_find_from_app(&client_table, last_ungrabbed_app));
+
+            last_ungrabbed_app = None;
             
             break;
+
+            
 
         /**/case ButtonPress:
             {
@@ -140,17 +148,21 @@ int main(int argc, char ** argv){
                     // 除去イベントを送信
                     XSendEvent(mtwm_display, client->window[MTWM_CLIENT_APP], False, NoEventMask, &delete_event);
                 }
-
-
             }
 
             XRaiseWindow(mtwm_display, client->window[MTWM_CLIENT_BOX]);
             XSetInputFocus(mtwm_display, client->window[MTWM_CLIENT_APP], RevertToNone, CurrentTime);
             
             if(last_ungrabbed_app != None){
+                mtwm_draw_client(mtwm_client_table_find_from_app(&client_table, last_ungrabbed_app));
                 XGrabButton(mtwm_display, AnyButton, AnyModifier, last_ungrabbed_app, False,
                     ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
             }
+
+            if(last_ungrabbed_app != client->window[MTWM_CLIENT_APP]){
+                mtwm_draw_client(client);
+            }
+            
             XUngrabButton(mtwm_display, AnyButton, AnyModifier, client->window[MTWM_CLIENT_APP]);
             last_ungrabbed_app = client->window[MTWM_CLIENT_APP];
 
@@ -160,6 +172,9 @@ int main(int argc, char ** argv){
         /**/case ButtonRelease:
             // 掴んだウインドウを離す。
             grip_info.window = None;
+            // カーソルを定義。
+            XDefineCursor(mtwm_display, mtwm_root_window,
+                    XCreateFontCursor(mtwm_display, XC_left_ptr));
             break;
 
         /**/case ConfigureNotify:
@@ -209,6 +224,32 @@ int main(int argc, char ** argv){
                 // 掴んでいる位置によって、x及びy方向へのresizeが適用されないこともある。
                 x_diff *= ( (grip_info.event_property>>MTWM_RESIZE_ANGLE_START)%2 || (grip_info.event_property>>MTWM_RESIZE_ANGLE_END   )%2);
                 y_diff *= ( (grip_info.event_property>>MTWM_RESIZE_ANGLE_TOP  )%2 || (grip_info.event_property>>MTWM_RESIZE_ANGLE_BOTTOM)%2);
+                
+
+                // カーソル情報。
+                int cursor_info = XC_left_ptr;
+                
+                if((grip_info.event_property>>MTWM_RESIZE_ANGLE_TOP)%2){
+                    if     ((grip_info.event_property>>MTWM_RESIZE_ANGLE_START)%2) cursor_info = XC_top_left_corner;
+                    else if((grip_info.event_property>>MTWM_RESIZE_ANGLE_END)%2)   cursor_info = XC_top_right_corner;
+                    else                                                       cursor_info = XC_top_side;
+                }
+                else if((grip_info.event_property>>MTWM_RESIZE_ANGLE_BOTTOM)%2){
+                    if     ((grip_info.event_property>>MTWM_RESIZE_ANGLE_START)%2) cursor_info = XC_bottom_left_corner;
+                    else if((grip_info.event_property>>MTWM_RESIZE_ANGLE_END)%2)   cursor_info = XC_bottom_right_corner;
+                    else                                                       cursor_info = XC_bottom_side;
+                }
+                else{
+                    if     ((grip_info.event_property>>MTWM_RESIZE_ANGLE_START)%2) cursor_info = XC_left_side;
+                    else if((grip_info.event_property>>MTWM_RESIZE_ANGLE_END)%2)   cursor_info = XC_right_side;
+                }
+
+
+                
+                XDefineCursor(mtwm_display, mtwm_root_window,
+                    XCreateFontCursor(mtwm_display, cursor_info));
+                
+
 
                 mtwm_resize_window(client,
                                    grip_info.attributes.x,

@@ -32,37 +32,56 @@ void mtwm_draw_client(mtwm_client * _client){
         cairo_stroke(_client->cr[MTWM_CLIENT_BOX]);
     }
 
+    
+
     // TITLEBARの描画。
+    {
 
-    cairo_pattern_t * titlebar_pattern;
+        double titlebar_emphasization = 0.0;
 
-    const double titlebar_width = overall_width - _client->local_border_width;
+        // TITLEBAR描画の前に、ターゲットがFOCUSされているか確認(されている場合、色を強調)
+        Window focused_window;
+        int focused_window_revert;
+        XGetInputFocus(mtwm_display, &focused_window, &focused_window_revert);
+        if(focused_window == _client->window[MTWM_CLIENT_APP] && focused_window_revert == CurrentTime){
+            titlebar_emphasization = 1.0;
+        }
 
-    titlebar_pattern = cairo_pattern_create_linear (0.0,
-                                                    0.0,
-                                                    titlebar_width*0.0,
-                                                    mtwm_config_titlebar_height*1.0);
+        double titlebar_color_a = 0.4 - titlebar_emphasization*0.2;
+        double titlebar_color_b = 0.6 - titlebar_emphasization*0.2;
 
-    cairo_pattern_add_color_stop_rgb (titlebar_pattern, 1, 0.2, 0.2, 0.2);
-    cairo_pattern_add_color_stop_rgb (titlebar_pattern, 0, 0.4, 0.4, 0.4);
-    cairo_set_source(_client->cr[MTWM_CLIENT_BOX], titlebar_pattern);
+        // 描画
 
-    cairo_rectangle(_client->cr[MTWM_CLIENT_BOX],
-                    _client->local_border_width/2,
-                    mtwm_config_box_border ,
-                    titlebar_width,
-                    mtwm_config_titlebar_height);
-    cairo_fill(_client->cr[MTWM_CLIENT_BOX]);
+        cairo_pattern_t * titlebar_pattern;
 
-    cairo_set_source_rgb(_client->cr[MTWM_CLIENT_BOX], 0.9, 0.9, 0.9);
+        const double titlebar_width = overall_width - _client->local_border_width;
 
-    cairo_select_font_face(_client->cr[MTWM_CLIENT_BOX], "FreeMono",
-        CAIRO_FONT_SLANT_NORMAL,
-        CAIRO_FONT_WEIGHT_BOLD);
+        titlebar_pattern = cairo_pattern_create_linear (0.0,
+                                                        0.0,
+                                                        titlebar_width*0.0,
+                                                        mtwm_config_titlebar_height*1.0);
 
-    cairo_set_font_size(_client->cr[MTWM_CLIENT_BOX], 20);
-    cairo_move_to(_client->cr[MTWM_CLIENT_BOX], _client->local_border_width/2 + 5.0, mtwm_config_titlebar_height + mtwm_config_box_border - 2.0);
-    cairo_show_text(_client->cr[MTWM_CLIENT_BOX], _client->title); 
+        cairo_pattern_add_color_stop_rgb (titlebar_pattern, 1, titlebar_color_a, titlebar_color_a, titlebar_color_a);
+        cairo_pattern_add_color_stop_rgb (titlebar_pattern, 0, titlebar_color_b, titlebar_color_b, titlebar_color_b);
+        cairo_set_source(_client->cr[MTWM_CLIENT_BOX], titlebar_pattern);
+
+        cairo_rectangle(_client->cr[MTWM_CLIENT_BOX],
+                        _client->local_border_width/2,
+                        mtwm_config_box_border ,
+                        titlebar_width,
+                        mtwm_config_titlebar_height);
+        cairo_fill(_client->cr[MTWM_CLIENT_BOX]);
+
+        cairo_set_source_rgb(_client->cr[MTWM_CLIENT_BOX], 0.9, 0.9, 0.9);
+
+        cairo_select_font_face(_client->cr[MTWM_CLIENT_BOX], "FreeMono",
+            CAIRO_FONT_SLANT_NORMAL,
+            CAIRO_FONT_WEIGHT_BOLD);
+
+        cairo_set_font_size(_client->cr[MTWM_CLIENT_BOX], 20);
+        cairo_move_to(_client->cr[MTWM_CLIENT_BOX], _client->local_border_width/2 + 5.0, mtwm_config_titlebar_height + mtwm_config_box_border - 2.0);
+        cairo_show_text(_client->cr[MTWM_CLIENT_BOX], _client->title); 
+    }
 
     // EXITボタンの描画
 

@@ -32,7 +32,6 @@ int mtwm_new_client(mtwm_client_table * _client_table,
         XGrabButton(mtwm_display, AnyButton, AnyModifier, *_last_ungrabbed_app, False,
             ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
     }
-    (*_last_ungrabbed_app) = None;
 
     XSetInputFocus(mtwm_display, client.window[MTWM_CLIENT_APP], RevertToNone, CurrentTime);
 
@@ -99,6 +98,9 @@ int mtwm_new_client(mtwm_client_table * _client_table,
     // コンテキストを更新
     mtwm_draw_client(&client);
     mtwm_client_table_add(_client_table, client);
+
+
+
 
 
 }

@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MTWM_CLIENT_WIDGETS    2  // 構成ウインドウの数
     #define MTWM_CLIENT_BOX    0  // Box
     #define MTWM_CLIENT_APP    1  // Application
+    //#define MTWM_CLIENT_MASK   2  // Mask
 
 #define MTWM_RESIZE_ANGLE_TOP    0
 #define MTWM_RESIZE_ANGLE_BOTTOM 1
