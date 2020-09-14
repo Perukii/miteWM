@@ -22,7 +22,9 @@ ___
 
 # Preview　(latest release)
 
-![doga-mite3](https://user-images.githubusercontent.com/57752033/89909409-004ced00-dc2a-11ea-980a-7ff7d0de59aa.gif)
+0.1.1
+
+![mitewm_0 1 1](https://user-images.githubusercontent.com/57752033/89993297-73557280-dcc1-11ea-9b95-777de9911a19.png)
 
 ### 使用ライブラリ・アプリケーション
 
