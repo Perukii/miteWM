@@ -2,8 +2,8 @@
 // クライアント
 typedef struct{
     Window           window [MTWM_CLIENT_WIDGETS];
-    cairo_surface_t *surface[MTWM_CLIENT_WIDGETS-1];
-    cairo_t         *cr     [MTWM_CLIENT_WIDGETS-1];
+    cairo_surface_t *surface[1];
+    cairo_t         *cr     [1];
     char * title;
     int local_border_width;
     int local_border_height;

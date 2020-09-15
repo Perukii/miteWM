@@ -12,6 +12,8 @@ void mtwm_resize_window(mtwm_client * _client,
                         Bool _x_move,
                         Bool _y_move){
 
+    if(XEventsQueued(mtwm_display,QueuedAlready) >= 2) return;
+
     if(_x_move) _x_diff *= -1;
     if(_y_move) _y_diff *= -1;
     
